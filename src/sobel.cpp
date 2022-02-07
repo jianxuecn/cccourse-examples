@@ -1,4 +1,4 @@
-/* sobel.cpp - Sobel filter sequential program*/
+/* sobel.cpp - Sobel filter sequential program */
 #include <float.h>
 #include <assert.h>
 #include <omp.h>

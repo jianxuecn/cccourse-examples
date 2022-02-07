@@ -1,4 +1,4 @@
-/* sobel_mpi.cpp - Sobel filter with MPI*/
+/* sobel_mpi.cpp - Sobel filter with MPI */
 #include <float.h>
 #include <assert.h>
 #include <mpi.h>

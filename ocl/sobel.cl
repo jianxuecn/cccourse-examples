@@ -264,7 +264,7 @@ __kernel void k_sobel1(__global float *dataOut,
     // SW
     if (x > 0 && y < imageHeight-1) {
         hSum += (float)dataIn[pixOffset];    // horizontal gradient of Red
-        vSum += (float)dataIn[pixOffset];    // vertical gradient of Blue
+        vSum += (float)dataIn[pixOffset];    // vertical gradient of Red
     }
     pixOffset ++;
 
@@ -277,10 +277,10 @@ __kernel void k_sobel1(__global float *dataOut,
     // SE
     if (x < imageWidth-1 && y < imageHeight-1) {
         hSum -= (float)dataIn[pixOffset];    // horizontal gradient of Red
-        vSum += (float)dataIn[pixOffset];    // vertical gradient of Blue
+        vSum += (float)dataIn[pixOffset];    // vertical gradient of Red
     }
 
-    // Weighted combination of Root-Sum-Square per-color-band H & V gradients for each of RGB
+    // Weighted combination of Root-Sum-Square H & V gradients
     temp =  sqrt((hSum * hSum) + (vSum * vSum));
 
     int outIdx = y * imageWidth + x;

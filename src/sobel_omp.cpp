@@ -1,4 +1,4 @@
-/* sobel_omp.c - Sobel filter with OpenMP*/
+/* sobel_omp.cpp - Sobel filter with OpenMP */
 #include <float.h>
 #include <assert.h>
 #include <omp.h>
