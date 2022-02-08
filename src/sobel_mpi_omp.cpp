@@ -269,7 +269,7 @@ int main(int argc, char *argv[])
 
     int r = 0;
     if (rank == MASTER) {
-        std::cout << "The total time for execution is " << end_time - start_time << std::endl;
+        std::cout << "The total time for execution is " << end_time - start_time << "s" << std::endl;
 
         std::string fnIn(argv[1]);
         std::size_t found = fnIn.find_last_of('.');

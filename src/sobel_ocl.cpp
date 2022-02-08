@@ -375,7 +375,7 @@ void sobel_filtering(FIBITMAP *imgIn, FIBITMAP *imgOut)
 
     clFinish(clCommandQueue);
 
-    LOG_INFO("The total time for execution is " << omp_get_wtime() - start_time);
+    LOG_INFO("The total time for execution is " << omp_get_wtime() - start_time << "s");
 }
 
 int main(int argc, char *argv[])

@@ -116,7 +116,7 @@ void sobel_filtering(FIBITMAP *imgIn, FIBITMAP *imgOut)
         }
     }
 
-    std::cout << "The total time for execution is " << omp_get_wtime() - start_time << std::endl;
+    std::cout << "The total time for execution is " << omp_get_wtime() - start_time << "s" << std::endl;
 }
 int main(int argc, char *argv[])
 {

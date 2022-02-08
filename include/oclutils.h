@@ -10,13 +10,9 @@
 #include <CL/opencl.h>
 #endif
 
-#define LOG_INFO(x)    do { std::cout << x << std::endl; } while (0)
-#define LOG_DEBUG(x)   do { std::cout << "|   DEBUG | in " __FILE__ ", line " << __LINE__ << ": "<< x << std::endl; } while (0)
-#define LOG_ERROR(x)   do { std::cout << "|   ERROR | in " __FILE__ ", line " << __LINE__ << ": "<< x << std::endl; } while (0)
-#define LOG_WARNING(x) do { std::cout << "| WARNING | in " __FILE__ ", line " << __LINE__ << ": "<< x << std::endl; } while (0)
-#define LOG_SEGMENT(x) do { std::cout << x; } while (0)
+#include "logutils.h"
 
-cl_int get_platform_id(cl_platform_id &selectedPlatformID, bool &isNV)
+inline cl_int get_platform_id(cl_platform_id &selectedPlatformID, bool &isNV)
 {
     char chBuffer[1024];
     cl_uint platformCount;
@@ -97,7 +93,7 @@ cl_int get_platform_id(cl_platform_id &selectedPlatformID, bool &isNV)
     return CL_SUCCESS;
 }
 
-cl_device_id get_max_flops_device(cl_context gpuContext)
+inline cl_device_id get_max_flops_device(cl_context gpuContext)
 {
     size_t parmDataBytes;
     cl_device_id* devices;
@@ -194,7 +190,7 @@ inline int convert_sm_ver_to_cores(int major, int minor)
 }
 // end of GPU Architecture definitions
 
-void show_opencl_device_info(cl_device_id device)
+inline void show_opencl_device_info(cl_device_id device)
 {
     char deviceString[1024];
     bool nvDevice = false;
@@ -267,7 +263,7 @@ void show_opencl_device_info(cl_device_id device)
     LOG_INFO("Device extensions: " << deviceString);
 }
 
-bool load_cl_source_from_file(cl_context gpuContext, char const *filename, cl_program &program)
+inline bool load_cl_source_from_file(cl_context gpuContext, char const *filename, cl_program &program)
 {
     FILE *fp = fopen(filename, "rb");
     if (!fp) {
@@ -302,7 +298,7 @@ bool load_cl_source_from_file(cl_context gpuContext, char const *filename, cl_pr
     return res;
 }
 
-bool load_cl_source_from_string(cl_context gpuContext, char const *src, cl_program &program)
+inline bool load_cl_source_from_string(cl_context gpuContext, char const *src, cl_program &program)
 {
     if (!src) return false;
     cl_int retCode;
