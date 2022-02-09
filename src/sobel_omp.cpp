@@ -72,8 +72,8 @@ void sobel_filtering(FIBITMAP *imgIn, FIBITMAP *imgOut)
             }
         }
     }
-    std::cout << "the minimum value of pixels " << pixel_value_min << std::endl;
-    std::cout << "the maximum value of pixels " << pixel_value_max << std::endl;
+    std::cout << "the minimum value: " << pixel_value_min << std::endl;
+    std::cout << "the maximum value: " << pixel_value_max << std::endl;
     if ((int)(pixel_value_max - pixel_value_min) == 0) {
         std::cout << "Nothing exists!!!" << std::endl;
         return;

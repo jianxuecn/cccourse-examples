@@ -82,7 +82,8 @@ void sobel_filtering(int rank, int np,
             if (tempMax > pixel_value_max) pixel_value_max = tempMax;
         }
 
-        std::cout << "The global min/max value of pixels: " << pixel_value_min << "/" << pixel_value_max << std::endl;
+        std::cout << "the global minimum value: " << pixel_value_min << std::endl;
+        std::cout << "the global maximum value: " << pixel_value_max << std::endl;
 
         // send global min & max to other nodes
         std::cout << "Send global min & max to other nodes ..." << std::endl;

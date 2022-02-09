@@ -59,7 +59,7 @@ inline int show_cuda_device_info(int devIdx)
     LOG_INFO("CUDA device " << devIdx << ": " << devProp.name);
     LOG_INFO("  multi processor count: " << devProp.multiProcessorCount);
     LOG_INFO("  shared memory per block: " << devProp.sharedMemPerBlock / 1024.0 << " KB");
-    LOG_INFO("  max bolcks per multi processor: " << devProp.maxBlocksPerMultiProcessor);
+    //LOG_INFO("  max bolcks per multi processor: " << devProp.maxBlocksPerMultiProcessor); // not supported befor CUDA 11.0
     LOG_INFO("  max threads per block: " << devProp.maxThreadsPerBlock);
     LOG_INFO("  max threads per multi processor: " << devProp.maxThreadsPerMultiProcessor);
     LOG_INFO("  max warps per multi processor: " << devProp.maxThreadsPerMultiProcessor / 32);

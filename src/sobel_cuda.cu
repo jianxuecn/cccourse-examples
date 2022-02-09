@@ -4,6 +4,7 @@
 #include <string>
 #include <cstring>
 #include <assert.h>
+#include <float.h>
 #include <cuda_runtime.h>
 
 #include "imgutils.h"
@@ -477,7 +478,6 @@ void sobel_filtering(FIBITMAP* imgIn, FIBITMAP* imgOut)
 
     unsigned int minMaxBlockThreadNum = gDeviceProp.maxThreadsPerBlock;
     unsigned int minMaxBlockNum = (totalPixelNum + minMaxBlockThreadNum - 1) / minMaxBlockThreadNum;
-    LOG_DEBUG("minMaxBlockThreadNum = " << minMaxBlockThreadNum);
     cudaRetCode = cudaMalloc(&devMinValues, minMaxBlockNum * sizeof(float));
     CUDA_CHECK_RETURN(cudaRetCode, "Cannot allocate memory for min reduction on device!");
     cudaRetCode = cudaMalloc(&devMaxValues, minMaxBlockNum * sizeof(float));
@@ -497,6 +497,8 @@ void sobel_filtering(FIBITMAP* imgIn, FIBITMAP* imgOut)
     // Pass 1: do sobel filtering
     dim3 sobelBlockDim(32, gDeviceProp.maxThreadsPerBlock / 32);
     dim3 sobelGridDim((width + sobelBlockDim.x - 1) / sobelBlockDim.x, (height + sobelBlockDim.y - 1) / sobelBlockDim.y);
+    //LOG_INFO("sobelBlockDim: " << sobelBlockDim.x << " x " << sobelBlockDim.y);
+    //LOG_INFO("sobelGridDim: " << sobelGridDim.x << " x " << sobelGridDim.y);
     if (chNum == 4) {
         k_sobel4<<<sobelGridDim, sobelBlockDim>>>(devMiddleResult, (uchar4 *)devImageDataIn, width, height);
     } else if (chNum == 3) {
@@ -506,12 +508,15 @@ void sobel_filtering(FIBITMAP* imgIn, FIBITMAP* imgOut)
     }
 
     // Pass 2: get min & max pixel value
+    //LOG_INFO("minMaxBlockDim: " << minMaxBlockThreadNum);
+    //LOG_INFO("minMaxGridDim: " << minMaxBlockNum);
     k_min_max<<<minMaxBlockNum, minMaxBlockThreadNum, minMaxBlockThreadNum*2*sizeof(float)>>>(devMinValues, devMaxValues, devMiddleResult, totalPixelNum);
+    unsigned int minMaxIterBlockNum = minMaxBlockNum;
     unsigned int valNum = minMaxBlockNum;
-    while (minMaxBlockNum > 1) {
-        valNum = minMaxBlockNum;
-        minMaxBlockNum = (minMaxBlockNum + minMaxBlockThreadNum - 1) / minMaxBlockThreadNum;
-        k_min_max_iter<<<minMaxBlockNum, minMaxBlockThreadNum, minMaxBlockThreadNum*2*sizeof(float)>>>(devMinValues, devMaxValues, valNum);
+    while (minMaxIterBlockNum > 1) {
+        valNum = minMaxIterBlockNum;
+        minMaxIterBlockNum = (minMaxIterBlockNum + minMaxBlockThreadNum - 1) / minMaxBlockThreadNum;
+        k_min_max_iter<<<minMaxIterBlockNum, minMaxBlockThreadNum, minMaxBlockThreadNum*2*sizeof(float)>>>(devMinValues, devMaxValues, valNum);
     }
     //cudaDeviceSynchronize();
     //CUDA_DEBUG("CUDA error occurred!");
@@ -525,10 +530,14 @@ void sobel_filtering(FIBITMAP* imgIn, FIBITMAP* imgOut)
     if (chNum == 4) {
         unsigned int scaleBlockThreadNum = gDeviceProp.maxThreadsPerBlock;
         unsigned int scaleBlockNum = (totalPixelNum + minMaxBlockThreadNum - 1) / minMaxBlockThreadNum;
+        //LOG_INFO("scaleBlockDim: " << scaleBlockThreadNum);
+        //LOG_INFO("scaleGridDim: " << scaleBlockNum);
         k_scale_pixels4<<<scaleBlockNum, scaleBlockThreadNum>>>((uchar4*)devImageDataOut, devMiddleResult, minVal, maxVal, totalPixelNum);
     } else {
         dim3 scaleBlockDim(32, gDeviceProp.maxThreadsPerBlock / 32);
         dim3 scaleGridDim((width + sobelBlockDim.x - 1) / sobelBlockDim.x, (height + sobelBlockDim.y - 1) / sobelBlockDim.y);
+        //LOG_INFO("scaleBlockDim: " << scaleBlockDim.x << " x " << scaleBlockDim.y);
+        //LOG_INFO("scaleGridDim: " << scaleGridDim.x << " x " << scaleGridDim.y);
         if (chNum == 3) {
             k_scale_pixels3<<<scaleGridDim, scaleBlockDim>>>(devImageDataOut, devMiddleResult, minVal, maxVal, width, height, pitch);
         } else if (chNum == 1) {
@@ -548,8 +557,8 @@ void sobel_filtering(FIBITMAP* imgIn, FIBITMAP* imgOut)
     float elapsedTime;
     cudaEventElapsedTime(&elapsedTime, start, stop);
 
-    LOG_INFO("the value of minimum: " << minVal);
-    LOG_INFO("the value of maximum: " << maxVal);
+    LOG_INFO("the minimum value: " << minVal);
+    LOG_INFO("the maximum value: " << maxVal);
     LOG_INFO("The total time for execution is: " << elapsedTime / 1000.0 << "s");
 
     cudaFree(devImageDataIn);
