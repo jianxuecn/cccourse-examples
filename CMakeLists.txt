@@ -49,6 +49,8 @@ find_package(OpenCL QUIET)
 
 find_package(MPI QUIET)
 
+find_package(CUDA QUIET)
+
 #if(NOT GLUT_FOUND)
 #  message(FATAL_ERROR "${PROJECT_NAME} requires GLUT.")
 #endif(NOT GLUT_FOUND)
@@ -81,6 +83,17 @@ function(add_example_withomp EXAMPLE_NAME)
   install(TARGETS ${EXAMPLE_NAME} RUNTIME DESTINATION . CONFIGURATIONS Release)  
 endfunction(add_example_withomp)
 
+function(add_cuda_example EXAMPLE_NAME)
+  if(ARGV1)
+    set(LIBRARIES ${ARGV})
+    list(REMOVE_AT LIBRARIES 0)
+  endif(ARGV1)
+  add_executable(${EXAMPLE_NAME} src/${EXAMPLE_NAME}.cu)
+  target_link_libraries(${EXAMPLE_NAME} ${LIBRARIES})
+  install(TARGETS ${EXAMPLE_NAME} RUNTIME DESTINATION . CONFIGURATIONS Release)  
+endfunction(add_cuda_example)
+
+
 if(FREEIMAGE_FOUND)
   include_directories(${FREEIMAGE_INCLUDE_DIR})
   add_example(batchresize ${FREEIMAGE_LIBRARIES})
@@ -97,5 +110,9 @@ if(FREEIMAGE_FOUND)
     add_example(sobel_mpi ${FREEIMAGE_LIBRARIES} ${MPI_CXX_LIBRARIES})
     add_example_withomp(sobel_mpi_omp ${FREEIMAGE_LIBRARIES} ${MPI_CXX_LIBRARIES})
   endif(MPI_FOUND)
+  if(CUDA_FOUND)
+    enable_language(CUDA)
+    add_cuda_example(sobel_cuda ${FREEIMAGE_LIBRARIES})
+  endif(CUDA_FOUND)
 endif(FREEIMAGE_FOUND)
 

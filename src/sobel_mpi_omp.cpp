@@ -1,4 +1,4 @@
-/* sobel_mpi_omp.cpp - Sobel filter with MPI and OpenMP*/
+/* sobel_mpi_omp.cpp - Sobel filter with MPI and OpenMP */
 #include <float.h>
 #include <assert.h>
 #include <mpi.h>
@@ -90,7 +90,8 @@ void sobel_filtering(int rank, int np,
             if (tempMax > pixel_value_max) pixel_value_max = tempMax;
         }
 
-        std::cout << "The global min/max value of pixels: " << pixel_value_min << "/" << pixel_value_max << std::endl;
+        std::cout << "the global minimum value: " << pixel_value_min << std::endl;
+        std::cout << "the global maximum value: " << pixel_value_max << std::endl;
 
         // send global min & max to other nodes
         std::cout << "Send global min & max to other nodes ..." << std::endl;
@@ -269,7 +270,7 @@ int main(int argc, char *argv[])
 
     int r = 0;
     if (rank == MASTER) {
-        std::cout << "The total time for execution is " << end_time - start_time << std::endl;
+        std::cout << "The total time for execution is " << end_time - start_time << "s" << std::endl;
 
         std::string fnIn(argv[1]);
         std::size_t found = fnIn.find_last_of('.');
