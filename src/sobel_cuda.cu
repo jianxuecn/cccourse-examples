@@ -477,6 +477,10 @@ void sobel_filtering(FIBITMAP* imgIn, FIBITMAP* imgOut)
     CUDA_CHECK_RETURN(cudaRetCode, "Cannot allocate memory for middle result on device!");
 
     unsigned int minMaxBlockThreadNum = gDeviceProp.maxThreadsPerBlock;
+    if (!is_pow2(minMaxBlockThreadNum)) {
+        minMaxBlockThreadNum = next_pow2((minMaxBlockThreadNum + 2) >> 1);
+        LOG_INFO("Reduce minmax kernel block size to (power of 2): " << minMaxBlockThreadNum);
+    }
     unsigned int minMaxBlockNum = (totalPixelNum + minMaxBlockThreadNum - 1) / minMaxBlockThreadNum;
     cudaRetCode = cudaMalloc(&devMinValues, minMaxBlockNum * sizeof(float));
     CUDA_CHECK_RETURN(cudaRetCode, "Cannot allocate memory for min reduction on device!");
@@ -512,9 +516,8 @@ void sobel_filtering(FIBITMAP* imgIn, FIBITMAP* imgOut)
     //LOG_INFO("minMaxGridDim: " << minMaxBlockNum);
     k_min_max<<<minMaxBlockNum, minMaxBlockThreadNum, minMaxBlockThreadNum*2*sizeof(float)>>>(devMinValues, devMaxValues, devMiddleResult, totalPixelNum);
     unsigned int minMaxIterBlockNum = minMaxBlockNum;
-    unsigned int valNum = minMaxBlockNum;
     while (minMaxIterBlockNum > 1) {
-        valNum = minMaxIterBlockNum;
+        unsigned int valNum = minMaxIterBlockNum;
         minMaxIterBlockNum = (minMaxIterBlockNum + minMaxBlockThreadNum - 1) / minMaxBlockThreadNum;
         k_min_max_iter<<<minMaxIterBlockNum, minMaxBlockThreadNum, minMaxBlockThreadNum*2*sizeof(float)>>>(devMinValues, devMaxValues, valNum);
     }
