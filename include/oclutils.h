@@ -118,6 +118,8 @@ inline cl_device_id get_max_flops_device(cl_context gpuContext)
     cl_uint clockFrequency;
     clGetDeviceInfo(devices[currentDevice], CL_DEVICE_MAX_CLOCK_FREQUENCY, sizeof(clockFrequency), &clockFrequency, NULL);
 
+    LOG_INFO("Device " << currentDevice << ": Number of Compute Units = " << computeUnits << ", Clock Frequency = " << clockFrequency);
+
     maxFlops = computeUnits * clockFrequency;
     ++currentDevice;
 
@@ -142,8 +144,61 @@ inline cl_device_id get_max_flops_device(cl_context gpuContext)
 
     delete[]devices;
 
-
     return maxFlopsDevice;
+}
+
+inline cl_device_id get_max_units_device(cl_context gpuContext)
+{
+    size_t parmDataBytes;
+    cl_device_id* devices;
+
+    // get the list of GPU devices associated with context
+    clGetContextInfo(gpuContext, CL_CONTEXT_DEVICES, 0, NULL, &parmDataBytes);
+    size_t deviceCount = parmDataBytes / sizeof(cl_device_id);
+    devices = new cl_device_id[deviceCount];
+
+    clGetContextInfo(gpuContext, CL_CONTEXT_DEVICES, parmDataBytes, devices, NULL);
+
+    cl_device_id maxUnitsDevice = devices[0];
+    cl_uint maxUnits = 0;
+
+    size_t currentDevice = 0;
+
+    // CL_DEVICE_MAX_COMPUTE_UNITS
+    cl_uint computeUnits;
+    clGetDeviceInfo(devices[currentDevice], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(computeUnits), &computeUnits, NULL);
+
+    // CL_DEVICE_MAX_CLOCK_FREQUENCY
+    //cl_uint clockFrequency;
+    //clGetDeviceInfo(devices[currentDevice], CL_DEVICE_MAX_CLOCK_FREQUENCY, sizeof(clockFrequency), &clockFrequency, NULL);
+
+    LOG_INFO("Device " << currentDevice << ": Number of Compute Units = " << computeUnits);
+
+    maxUnits = computeUnits;
+    ++currentDevice;
+
+    while (currentDevice < deviceCount) {
+        // CL_DEVICE_MAX_COMPUTE_UNITS
+        //cl_uint computeUnits;
+        clGetDeviceInfo(devices[currentDevice], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(computeUnits), &computeUnits, NULL);
+
+        // CL_DEVICE_MAX_CLOCK_FREQUENCY
+        //cl_uint clockFrequency;
+        //clGetDeviceInfo(devices[currentDevice], CL_DEVICE_MAX_CLOCK_FREQUENCY, sizeof(clockFrequency), &clockFrequency, NULL);
+
+        LOG_INFO("Device " << currentDevice << ": Number of Compute Units = " << computeUnits);
+
+        cl_uint units = computeUnits;
+        if (units > maxUnits) {
+            maxUnits = units;
+            maxUnitsDevice = devices[currentDevice];
+        }
+        ++currentDevice;
+    }
+
+    delete[]devices;
+
+    return maxUnitsDevice;
 }
 
 // Beginning of GPU Architecture definitions
