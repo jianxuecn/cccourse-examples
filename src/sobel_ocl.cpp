@@ -1,4 +1,4 @@
-/* sobel_omp.cpp - Sobel filter with OpenMP*/
+/* sobel_ocl.cpp - Sobel filter with OpenCL */
 #include <float.h>
 #include <assert.h>
 #include <omp.h>
@@ -30,21 +30,6 @@ unsigned int gImageBytes;
 unsigned int gMinMaxKernelLocalSize;
 unsigned int gMinMaxThreadNumPerBlock;
 unsigned int gMinMaxBlockNum;
-
-inline bool is_pow2(unsigned int x)
-{
-    return ((x&(x - 1)) == 0);
-}
-
-inline unsigned int next_pow2(unsigned int x) {
-    --x;
-    x |= x >> 1;
-    x |= x >> 2;
-    x |= x >> 4;
-    x |= x >> 8;
-    x |= x >> 16;
-    return ++x;
-}
 
 bool init_ocl_ctx(int chNum)
 {
@@ -213,6 +198,7 @@ void clear_ocl_ctx()
 {
     if (clSobelKernel) { clReleaseKernel(clSobelKernel); clSobelKernel = 0; }
     if (clMinMaxKernel) { clReleaseKernel(clMinMaxKernel); clMinMaxKernel = 0; }
+    if (clMinMaxIterKernel) { clReleaseKernel(clMinMaxIterKernel); clMinMaxIterKernel = 0; }
     if (clScalePixelsKernel) { clReleaseKernel(clScalePixelsKernel); clScalePixelsKernel = 0; }
     if (clProgram) { clReleaseProgram(clProgram); clProgram = 0; }
     if (clImageDataIn) { clReleaseMemObject(clImageDataIn); clImageDataIn = 0; }
@@ -307,30 +293,51 @@ void sobel_filtering(FIBITMAP *imgIn, FIBITMAP *imgOut)
         return;
     }
 
+    unsigned int minMaxIterBlockNum = gMinMaxBlockNum;
+    while (minMaxIterBlockNum > 1) {
+        retCode = clSetKernelArg(clMinMaxIterKernel, 0, sizeof(cl_mem), &(clMinValues));
+        retCode |= clSetKernelArg(clMinMaxIterKernel, 1, sizeof(cl_mem), &(clMaxValues));
+        retCode |= clSetKernelArg(clMinMaxIterKernel, 2, sizeof(unsigned int), &(minMaxIterBlockNum));
+        retCode |= clSetKernelArg(clMinMaxIterKernel, 3, gMinMaxThreadNumPerBlock * sizeof(float), NULL);
+        retCode |= clSetKernelArg(clMinMaxIterKernel, 4, gMinMaxThreadNumPerBlock * sizeof(float), NULL);
+        if (retCode != CL_SUCCESS) {
+            LOG_ERROR("Set minmaxiter kernel arguments failed! Error code = " << retCode);
+            return;
+        }
+        minMaxIterBlockNum = (minMaxIterBlockNum + gMinMaxThreadNumPerBlock - 1) / gMinMaxThreadNumPerBlock;
+        globalDim[0] = minMaxIterBlockNum * gMinMaxThreadNumPerBlock;
+        retCode = clEnqueueNDRangeKernel(clCommandQueue, clMinMaxIterKernel,
+            1, NULL, globalDim, localDim, 0, NULL, NULL);
+        if (retCode != CL_SUCCESS) {
+            LOG_ERROR("Enqueue minmaxiter kernel failed! Error code = " << retCode);
+            return;
+        }
+    }
+
     // copy min/max values from device to host
-    std::vector<float> minValues(gMinMaxBlockNum, 0);
-    retCode = clEnqueueReadBuffer(clCommandQueue, clMinValues, CL_TRUE, 0, gMinMaxBlockNum * sizeof(float), minValues.data(), 0, NULL, NULL);
-    if (retCode != CL_SUCCESS) {
-        LOG_ERROR("Enqueue read min values failed! Error code = " << retCode);
-        return;
-    }
-    std::vector<float> maxValues(gMinMaxBlockNum, 0);
-    retCode = clEnqueueReadBuffer(clCommandQueue, clMaxValues, CL_TRUE, 0, gMinMaxBlockNum * sizeof(float), maxValues.data(), 0, NULL, NULL);
-    if (retCode != CL_SUCCESS) {
-        LOG_ERROR("Enqueue read min values failed! Error code = " << retCode);
-        return;
-    }
-
     float minVal, maxVal;
-    minVal = minValues[0];
-    maxVal = maxValues[0];
-    for (size_t i = 1; i < gMinMaxBlockNum; ++i) {
-        if (minValues[i] < minVal) minVal = minValues[i];
-        if (maxValues[i] > maxVal) maxVal = maxValues[i];
+    //std::vector<float> minValues(gMinMaxBlockNum, 0);
+    //std::vector<float> maxValues(gMinMaxBlockNum, 0);
+    retCode = clEnqueueReadBuffer(clCommandQueue, clMinValues, CL_TRUE, 0, 1 * sizeof(float), &minVal, 0, NULL, NULL);
+    if (retCode != CL_SUCCESS) {
+        LOG_ERROR("Enqueue read min values failed! Error code = " << retCode);
+        return;
+    }
+    retCode = clEnqueueReadBuffer(clCommandQueue, clMaxValues, CL_TRUE, 0, 1 * sizeof(float), &maxVal, 0, NULL, NULL);
+    if (retCode != CL_SUCCESS) {
+        LOG_ERROR("Enqueue read min values failed! Error code = " << retCode);
+        return;
     }
 
-    LOG_INFO("Minimum pixel value: " << minVal);
-    LOG_INFO("Maximum pixel value: " << maxVal);
+    //minVal = minValues[0];
+    //maxVal = maxValues[0];
+    //for (size_t i = 1; i < gMinMaxBlockNum; ++i) {
+    //    if (minValues[i] < minVal) minVal = minValues[i];
+    //    if (maxValues[i] > maxVal) maxVal = maxValues[i];
+    //}
+
+    LOG_INFO("the minimum value: " << minVal);
+    LOG_INFO("the maximum value: " << maxVal);
 
     // Pass 3: scale pixel to [0, 255]
     retCode = clSetKernelArg(clScalePixelsKernel, 0, sizeof(cl_mem), &(clImageDataOut));
@@ -375,7 +382,7 @@ void sobel_filtering(FIBITMAP *imgIn, FIBITMAP *imgOut)
 
     clFinish(clCommandQueue);
 
-    LOG_INFO("The total time for execution is " << omp_get_wtime() - start_time);
+    LOG_INFO("The total time for execution is " << omp_get_wtime() - start_time << "s");
 }
 
 int main(int argc, char *argv[])

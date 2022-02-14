@@ -264,7 +264,7 @@ __kernel void k_sobel1(__global float *dataOut,
     // SW
     if (x > 0 && y < imageHeight-1) {
         hSum += (float)dataIn[pixOffset];    // horizontal gradient of Red
-        vSum += (float)dataIn[pixOffset];    // vertical gradient of Blue
+        vSum += (float)dataIn[pixOffset];    // vertical gradient of Red
     }
     pixOffset ++;
 
@@ -277,10 +277,10 @@ __kernel void k_sobel1(__global float *dataOut,
     // SE
     if (x < imageWidth-1 && y < imageHeight-1) {
         hSum -= (float)dataIn[pixOffset];    // horizontal gradient of Red
-        vSum += (float)dataIn[pixOffset];    // vertical gradient of Blue
+        vSum += (float)dataIn[pixOffset];    // vertical gradient of Red
     }
 
-    // Weighted combination of Root-Sum-Square per-color-band H & V gradients for each of RGB
+    // Weighted combination of Root-Sum-Square H & V gradients
     temp =  sqrt((hSum * hSum) + (vSum * vSum));
 
     int outIdx = y * imageWidth + x;
@@ -318,10 +318,8 @@ __kernel void k_min_max(__global float *minOut,
     }
 }
 
-__kernel void k_min_max_iter(__global float *minOut,
-                             __global float *maxOut,
-                             __global float *minIn,
-                             __global float *maxIn,
+__kernel void k_min_max_iter(__global float *minInOut,
+                             __global float *maxInOut,
                              const unsigned int n,
                              __local float *minShared,
                              __local float *maxShared)
@@ -329,8 +327,8 @@ __kernel void k_min_max_iter(__global float *minOut,
     unsigned int tid = get_local_id(0);
     unsigned int i = get_global_id(0);
 
-    minShared[tid] = (i < n) ? minIn[i] : FLT_MAX;
-    maxShared[tid] = (i < n) ? maxIn[i] : FLT_MIN;
+    minShared[tid] = (i < n) ? minInOut[i] : FLT_MAX;
+    maxShared[tid] = (i < n) ? maxInOut[i] : FLT_MIN;
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -345,8 +343,8 @@ __kernel void k_min_max_iter(__global float *minOut,
 
     if (tid == 0) {
         unsigned int outIdx = get_group_id(0);
-        minOut[outIdx] = minShared[0];
-        maxOut[outIdx] = maxShared[0];
+        minInOut[outIdx] = minShared[0];
+        maxInOut[outIdx] = maxShared[0];
     }
 }
 

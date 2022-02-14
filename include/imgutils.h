@@ -3,7 +3,22 @@
 
 #include <FreeImage.h>
 
-FIBITMAP * load_image(char const *filename, int flags)
+inline bool is_pow2(unsigned int x)
+{
+    return ((x & (x - 1)) == 0);
+}
+
+inline unsigned int next_pow2(unsigned int x) {
+    --x;
+    x |= x >> 1;
+    x |= x >> 2;
+    x |= x >> 4;
+    x |= x >> 8;
+    x |= x >> 16;
+    return ++x;
+}
+
+inline FIBITMAP * load_image(char const *filename, int flags)
 {
     FREE_IMAGE_FORMAT fif = FreeImage_GetFileType(filename, 0);
 
@@ -24,7 +39,7 @@ FIBITMAP * load_image(char const *filename, int flags)
     return dib;
 }
 
-bool save_image(char const *filename, FIBITMAP *dib, int flags)
+inline bool save_image(char const *filename, FIBITMAP *dib, int flags)
 {
     if (!dib) return false;
 

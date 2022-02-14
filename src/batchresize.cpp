@@ -1,4 +1,4 @@
-/*batchresize.cpp - generate resized images in batch for parallel program test*/
+/* batchresize.cpp - generate resized images in batch for parallel program test */
 #include <float.h>
 #include <assert.h>
 #include <omp.h>

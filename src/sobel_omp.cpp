@@ -1,4 +1,4 @@
-/* sobel_omp.c - Sobel filter with OpenMP*/
+/* sobel_omp.cpp - Sobel filter with OpenMP */
 #include <float.h>
 #include <assert.h>
 #include <omp.h>
@@ -72,8 +72,8 @@ void sobel_filtering(FIBITMAP *imgIn, FIBITMAP *imgOut)
             }
         }
     }
-    std::cout << "the minimum value of pixels " << pixel_value_min << std::endl;
-    std::cout << "the maximum value of pixels " << pixel_value_max << std::endl;
+    std::cout << "the minimum value: " << pixel_value_min << std::endl;
+    std::cout << "the maximum value: " << pixel_value_max << std::endl;
     if ((int)(pixel_value_max - pixel_value_min) == 0) {
         std::cout << "Nothing exists!!!" << std::endl;
         return;
@@ -116,7 +116,7 @@ void sobel_filtering(FIBITMAP *imgIn, FIBITMAP *imgOut)
         }
     }
 
-    std::cout << "The total time for execution is " << omp_get_wtime() - start_time << std::endl;
+    std::cout << "The total time for execution is " << omp_get_wtime() - start_time << "s" << std::endl;
 }
 int main(int argc, char *argv[])
 {
