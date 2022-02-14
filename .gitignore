@@ -1,0 +1,39 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+#*.so
+#*.dylib
+#*.dll
+
+# Fortran module files
+#*.mod
+
+# Compiled Static libraries
+#*.lai
+#*.la
+#*.a
+#*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Qt user file
+*.user*
+*.autosave
+
+# Some Paths
+.idea/*
+build*
+
+# Platform (user & system) specific configure information for dependencies (3rd-party libraries)
+local-dependencies.cmake
