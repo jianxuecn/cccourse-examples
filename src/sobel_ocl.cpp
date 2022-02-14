@@ -56,7 +56,8 @@ bool init_ocl_ctx(int chNum)
         return false;
     }
 
-    clDeviceId = get_max_flops_device(clContext);
+    //clDeviceId = get_max_flops_device(clContext);
+    clDeviceId = get_max_units_device(clContext);
     show_opencl_device_info(clDeviceId);
     clGetDeviceInfo(clDeviceId, CL_DEVICE_EXTENSIONS, sizeof(stringBuffer), &stringBuffer, NULL);
 
