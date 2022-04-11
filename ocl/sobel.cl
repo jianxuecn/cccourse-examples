@@ -1,4 +1,4 @@
-// Implementation below is equivalent to linear 2D convolutions for H and V compoonents with:
+// Implementation below is equivalent to linear 2D convolutions for H and V components with:
 //      Convo Coefs for Horizontal component
 //  {  1,  0, -1,
 //     2,  0, -2,
