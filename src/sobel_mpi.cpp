@@ -256,7 +256,7 @@ int main(int argc, char *argv[])
     int r = 0;
     if (rank == MASTER) {
         double execTime = end_time - start_time;
-        std::cout << "The total time for execution is " << execTime << std::endl;
+        std::cout << "The total time for execution is " << execTime << "s" << std::endl;
 
         // output execution info (number of processors & execution time)
         std::string logFileName = argv[0];

@@ -842,7 +842,7 @@ int main(int argc, char* argv[])
     int r = 0;
     if (rank == MASTER) {
         double execTime = end_time - start_time;
-        LOG_INFO("The total time for execution is " << execTime);
+        LOG_INFO("The total time for execution is " << execTime << "s");
 
         // output execution info (number of processors & execution time)
         std::string logFileName = argv[0];
