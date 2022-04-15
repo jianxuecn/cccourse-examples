@@ -121,8 +121,6 @@ void sobel_filtering(int rank, int np,
     std::cout << "Filtering of input image on Process " << rank << " of " << gProcessorName << " finish." << std::endl;
 }
 
-
-
 int main(int argc, char *argv[])
 {
     if (argc < 2) {
@@ -175,13 +173,13 @@ int main(int argc, char *argv[])
         start_time = MPI_Wtime();
     }
 
-    //Broadcast the image size to all the nodes
+    // Broadcast the image size to all the nodes
     MPI_Bcast(&gImageChNum, 1, MPI_INT, MASTER, MPI_COMM_WORLD);
     MPI_Bcast(&gImageWidth, 1, MPI_INT, MASTER, MPI_COMM_WORLD);
     MPI_Bcast(&gImageHeight, 1, MPI_INT, MASTER, MPI_COMM_WORLD);
     MPI_Bcast(&gImagePitch, 1, MPI_INT, MASTER, MPI_COMM_WORLD);
 
-    //MPI_Barrier for Synchronization
+    // MPI_Barrier for Synchronization
     MPI_Barrier(MPI_COMM_WORLD);
 
     if (gImageChNum == 0) {
@@ -258,7 +256,7 @@ int main(int argc, char *argv[])
     int r = 0;
     if (rank == MASTER) {
         double execTime = end_time - start_time;
-        std::cout << "The total time for execution is " << execTime << std::endl;
+        std::cout << "The total time for execution is " << execTime << "s" << std::endl;
 
         // output execution info (number of processors & execution time)
         std::string logFileName = argv[0];
