@@ -405,7 +405,7 @@ __kernel void k_max(__global float *maxOut,
 
     maxShared[tid] = (i < n) ? dataIn[i] : FLT_MIN;
 
-    barrier(CLK_LOCAL_MEM_FENCE);
+    barrier(CLK_GLOBAL_MEM_FENCE);
 
     // do reduction in shared memory
     for (unsigned int s=get_local_size(0)/2; s>0; s>>=1) {
