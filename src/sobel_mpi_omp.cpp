@@ -63,7 +63,7 @@ void sobel_filtering(int rank, int np,
     pixel_value_max = DBL_MIN;
 
     int const pitchIn = imageWidthIn * gImageChNum;
-    int actual_threads_num = 0;
+    //int actual_threads_num = 0;
 #if defined(_MSC_VER)
 #pragma omp parallel for
 #else
@@ -81,17 +81,29 @@ void sobel_filtering(int rank, int np,
                 }
             }
             pixel_value = sqrt((pixel_value_x * pixel_value_x) + (pixel_value_y * pixel_value_y));
-            actual_threads_num = omp_get_num_threads();
-#pragma omp critical
-            {
-                if (pixel_value < pixel_value_min) pixel_value_min = pixel_value;
-                if (pixel_value > pixel_value_max) pixel_value_max = pixel_value;
+            //actual_threads_num = omp_get_num_threads();
+            //#pragma omp critical
+            //{
+            //    if (pixel_value < pixel_value_min) pixel_value_min = pixel_value;
+            //    if (pixel_value > pixel_value_max) pixel_value_max = pixel_value;
+            //}
+            if (pixel_value < pixel_value_min) {
+                #pragma omp critical
+                {
+                    if (pixel_value < pixel_value_min) pixel_value_min = pixel_value;
+                }
+            }
+            if (pixel_value > pixel_value_max) {
+                #pragma omp critical
+                {
+                    if (pixel_value > pixel_value_max) pixel_value_max = pixel_value;
+                }
             }
         }
     }
 
     std::cout << "Min/Max on Process " << rank << " of " << gProcessorName << ": " << pixel_value_min << "/" << pixel_value_max << std::endl;
-    std::cout << "Actual threads number on Process " << rank << " of " << gProcessorName << ": " << actual_threads_num << std::endl;
+    //std::cout << "Actual threads number on Process " << rank << " of " << gProcessorName << ": " << actual_threads_num << std::endl;
     MPI_Status status;
 
     if (rank != MASTER) {
