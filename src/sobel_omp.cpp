@@ -70,7 +70,7 @@ void sobel_filtering(FIBITMAP *imgIn, FIBITMAP *imgOut)
     pixel_value_max = -DBL_MAX;
     BYTE *dataIn = FreeImage_GetBits(imgIn);
 
-    int actual_threads_num = 0;
+    //int actual_threads_num = 0;
 #if defined(_MSC_VER)
 #pragma omp parallel for
 #else
@@ -88,17 +88,29 @@ void sobel_filtering(FIBITMAP *imgIn, FIBITMAP *imgOut)
                 }
             }
             pixel_value = sqrt((pixel_value_x * pixel_value_x) + (pixel_value_y * pixel_value_y));
-            actual_threads_num = omp_get_num_threads();
-#pragma omp critical
-            {
-                if (pixel_value < pixel_value_min) pixel_value_min = pixel_value;
-                if (pixel_value > pixel_value_max) pixel_value_max = pixel_value;
+            //actual_threads_num = omp_get_num_threads();
+            //#pragma omp critical
+            //{
+            //    if (pixel_value < pixel_value_min) pixel_value_min = pixel_value;
+            //    if (pixel_value > pixel_value_max) pixel_value_max = pixel_value;
+            //}
+            if (pixel_value < pixel_value_min) {
+                #pragma omp critical
+                {
+                    if (pixel_value < pixel_value_min) pixel_value_min = pixel_value;
+                }
+            }
+            if (pixel_value > pixel_value_max) {
+                #pragma omp critical
+                {
+                    if (pixel_value > pixel_value_max) pixel_value_max = pixel_value;
+                }
             }
         }
     }
     std::cout << "the minimum value: " << pixel_value_min << std::endl;
     std::cout << "the maximum value: " << pixel_value_max << std::endl;
-    std::cout << "actual threads number: " << actual_threads_num << std::endl;
+    //std::cout << "actual threads number: " << actual_threads_num << std::endl;
     if ((int)(pixel_value_max - pixel_value_min) == 0) {
         std::cout << "Nothing exists!!!" << std::endl;
         return;
