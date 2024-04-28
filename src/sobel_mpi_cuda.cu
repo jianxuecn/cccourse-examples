@@ -565,7 +565,7 @@ void sobel_filtering_gpu(int rank, int np,
 
     if (rank == MASTER) {
         // collect the min & max values from other nodes and calculate the global min & max
-        double tempMin, tempMax;
+        float tempMin, tempMax;
         LOG_INFO("Receive min & max from other nodes ...");
         for (int i = 1; i < np; ++i) {
             MPI_Recv(&tempMin, 1, MPI_FLOAT, i, i + 100, MPI_COMM_WORLD, &status);
